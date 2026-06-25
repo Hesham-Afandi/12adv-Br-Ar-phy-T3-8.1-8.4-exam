@@ -3,481 +3,477 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🧲 فيزياء الصف الثاني عشر - قانون بيوت-سافارت وقانون أمبير</title>
+    <title>🧲 Grade 12 Advanced Physics - Biot-Savart & Ampere's Law</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Cairo', sans-serif; }
+        body.en-mode { font-family: 'Inter', sans-serif; }
         .correct { background-color: #dcfce7 !important; border-color: #16a34a !important; }
         .incorrect { background-color: #fee2e2 !important; border-color: #dc2626 !important; }
-        .formula { font-family: 'Times New Roman', serif; font-style: italic; direction: ltr; display: inline-block; }
+        .formula { font-family: 'Times New Roman', serif; letter-spacing: 0.5px; direction: ltr; display: inline-block; font-style: italic; }
         .timer-warning { color: #dc2626 !important; animation: pulse 1s infinite; }
         @keyframes pulse { 50% { opacity: 0.7; } }
         @media print { .no-print { display: none !important; } }
-        .success-badge { 
-            display: inline-block; 
-            padding: 4px 12px; 
-            border-radius: 20px; 
-            font-weight: bold;
-            font-size: 0.875rem;
-        }
+        .success-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-weight: bold; font-size: 0.875rem; }
         .grade-excellent { background: #dcfce7; color: #166534; }
         .grade-good { background: #fef3c7; color: #92400e; }
         .grade-pass { background: #dbeafe; color: #1e40af; }
         .grade-fail { background: #fee2e2; color: #991b1b; }
+        .lang-switch {
+            position: fixed; top: 16px; left: 16px; z-index: 100;
+            background: white; padding: 6px; border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); display: flex; gap: 4px;
+            border: 2px solid #4f46e5;
+        }
+        [dir="ltr"] .lang-switch { left: auto; right: 16px; }
+        .lang-btn {
+            padding: 6px 14px; border-radius: 20px; cursor: pointer; font-weight: bold;
+            transition: all 0.3s; border: none; font-size: 0.875rem;
+            background: transparent; color: #6b7280;
+        }
+        .lang-btn.active { background: #4f46e5; color: white; box-shadow: 0 2px 6px rgba(79,70,229,0.4); }
+        .lang-btn:hover:not(.active) { background: #eef2ff; color: #4f46e5; }
+        .shuffle-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800 p-4 md:p-8 min-h-screen">
 
-    <!-- Timer -->
+    <div class="lang-switch no-print">
+        <button class="lang-btn active" onclick="setLanguage('ar')" id="btn-ar">عربي</button>
+        <button class="lang-btn" onclick="setLanguage('en')" id="btn-en">EN</button>
+    </div>
+
     <div id="timer-container" class="max-w-4xl mx-auto mb-4 text-center no-print">
         <div class="bg-white p-4 rounded-xl shadow-md inline-block border-2 border-indigo-100">
-            <span class="text-gray-600 ml-2">⏱️ الوقت المتبقي:</span>
+            <span class="text-gray-600 ml-2" data-ar="⏱️ الوقت المتبقي:" data-en="⏱️ Time Remaining:">⏱️ الوقت المتبقي:</span>
             <span id="timer" class="text-2xl font-bold text-indigo-600 font-mono">60:00</span>
+            <span class="shuffle-badge" data-ar="🔀 أسئلة عشوائية" data-en="🔀 Random Questions">🔀 أسئلة عشوائية</span>
         </div>
     </div>
 
-    <!-- Controls -->
     <div class="max-w-4xl mx-auto mb-6 flex flex-wrap gap-3 justify-center no-print">
-        <button onclick="toggleAnswers()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer">
-            👁️ إظهار / إخفاء الإجابات النموذجية
-        </button>
-        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer">
-            🖨️ طباعة / حفظ كـ PDF
-        </button>
+        <button onclick="toggleAnswers()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="👁️ إظهار / إخفاء الإجابات" data-en="👁️ Show / Hide Answers">👁️ إظهار / إخفاء الإجابات</button>
+        <button onclick="window.print()" class="bg-gray-800 hover:bg-gray-900 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="🖨️ طباعة / PDF" data-en="🖨️ Print / PDF">🖨️ طباعة / PDF</button>
+        <button onclick="reshuffleExam()" class="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-5 py-2 rounded-lg font-medium transition shadow cursor-pointer" data-ar="🔀 إعادة خلط الأسئلة" data-en="🔀 Reshuffle Questions">🔀 إعادة خلط الأسئلة</button>
     </div>
 
-    <!-- Header -->
     <header class="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md mb-8 border-r-4 border-indigo-600">
         <div class="text-center">
-            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">🧲 فيزياء الصف الثاني عشر المتقدم</h1>
-            <h2 class="text-lg text-indigo-600 font-semibold">الوحدة 8 (8.1-8.4): قانون بيوت-سافارت وقانون أمبير</h2>
-            <p class="text-sm text-gray-600 mt-2">Biot-Savart Law, Ampere's Law & Magnetic Fields</p>
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2" data-ar="🧲 فيزياء الصف الثاني عشر المتقدم" data-en="🧲 Grade 12 Advanced Physics">🧲 فيزياء الصف الثاني عشر المتقدم</h1>
+            <h2 class="text-lg text-indigo-600 font-semibold" data-ar="قانون بيوت-سافارت وقانون أمبير" data-en="Biot-Savart Law & Ampere's Law">قانون بيوت-سافارت وقانون أمبير</h2>
+            <p class="text-sm text-gray-600 mt-2" data-ar="المجال المغناطيسي للسلك المستقيم، الحلقة، الملف اللولبي، والتطبيقات" data-en="Magnetic Field of Straight Wire, Loop, Solenoid & Applications">المجال المغناطيسي للسلك المستقيم، الحلقة، الملف اللولبي، والتطبيقات</p>
+            <p class="text-xs text-orange-600 mt-2 font-semibold" data-ar="⚠️ ملاحظة: يتم خلط ترتيب الأسئلة والخيارات تلقائياً مع كل تحديث للصفحة" data-en="⚠️ Note: Questions and options are randomly shuffled on every page refresh">⚠️ ملاحظة: يتم خلط ترتيب الأسئلة والخيارات تلقائياً مع كل تحديث للصفحة</p>
         </div>
         <div class="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600">
-            <span>📅 التاريخ: <input type="text" class="border-b border-gray-400 bg-transparent w-28 text-center"></span>
-            <span>👤 الاسم: <input type="text" id="studentName" class="border-b border-gray-400 bg-transparent w-32 text-center" placeholder="أدخل الاسم"></span>
-            <span>⏱️ المدة: 60 دقيقة</span>
-            <span>📊 المجموع: 100 درجة</span>
+            <span><span data-ar="📅 التاريخ:" data-en="📅 Date:">📅 التاريخ:</span> <input type="text" class="border-b border-gray-400 bg-transparent w-28 text-center"></span>
+            <span><span data-ar="👤 الاسم:" data-en="👤 Name:">👤 الاسم:</span> <input type="text" id="studentName" class="border-b border-gray-400 bg-transparent w-32 text-center" placeholder="Enter name"></span>
+            <span><span data-ar="🏫 الشعبة:" data-en="🏫 Class:">🏫 الشعبة:</span> <input type="text" id="studentClass" class="border-b border-gray-400 bg-transparent w-28 text-center" placeholder="Class"></span>
+            <span><span data-ar="⏱️ المدة: 60 دقيقة" data-en="⏱️ Duration: 60 min">⏱️ المدة: 60 دقيقة</span></span>
+            <span><span data-ar="📊 المجموع: 100 درجة" data-en="📊 Total: 100 pts">📊 المجموع: 100 درجة</span></span>
         </div>
     </header>
 
-    <main class="max-w-4xl mx-auto space-y-8">
+    <main class="max-w-4xl mx-auto space-y-8" id="exam-content"></main>
 
-        <!-- Section 1: Biot-Savart Law -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الأول: قانون بيوت-سافارت والمجال المغناطيسي للسلك المستقيم</h2>
-            <ol id="section1-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-1">
-                    <strong>1.</strong> قانون بيوت-سافارت (Biot-Savart Law) يُستخدم لحساب:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="a" class="ml-2"> أ) المجال الكهربائي الناتج عن شحنة نقطية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="b" class="ml-2"> ب) المجال المغناطيسي الناتج عن عنصر تيار صغير</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="c" class="ml-2"> ج) القوة بين شحنتين</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q1" value="d" class="ml-2"> د) الطاقة المخزنة في ملف</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-2">
-                    <strong>2.</strong> الصيغة الرياضية لقانون بيوت-سافارت هي:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="a" class="ml-2"> أ) dB = (μ₀/4π) × (I·dl × r̂)/r²</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="b" class="ml-2"> ب) B = μ₀nI</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="c" class="ml-2"> ج) F = qvB</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q2" value="d" class="ml-2"> د) Φ = BA cos(θ)</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-3">
-                    <strong>3.</strong> قيمة نفاذية الفراغ (μ₀) تساوي:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="a" class="ml-2"> أ) 8.85 × 10⁻¹² T·m/A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="b" class="ml-2"> ب) 6.67 × 10⁻¹¹ T·m/A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="c" class="ml-2"> ج) 4π × 10⁻⁷ T·m/A</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q3" value="d" class="ml-2"> د) 9 × 10⁹ T·m/A</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ج)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-4">
-                    <strong>4.</strong> المجال المغناطيسي الناتج عن سلك مستقيم طويل يحمل تياراً I على بعد r منه يُحسب من:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="a" class="ml-2"> أ) B = μ₀I/(2πr)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="b" class="ml-2"> ب) B = μ₀I/(2r)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="c" class="ml-2"> ج) B = μ₀nI</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q4" value="d" class="ml-2"> د) B = μ₀I/(4πr)</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-5">
-                    <strong>5.</strong> لتحديد اتجاه المجال المغناطيسي حول سلك مستقيم، نستخدم:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="a" class="ml-2"> أ) قاعدة اليد اليسرى</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="b" class="ml-2"> ب) قاعدة اليد اليمنى (الإبهام في اتجاه التيار، والأصابع في اتجاه B)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="c" class="ml-2"> ج) قانون لينز</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q5" value="d" class="ml-2"> د) قانون فاراداي</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-            </ol>
-        </section>
+    <div class="text-center no-print pb-8 mt-8">
+        <button onclick="gradeExam()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer" data-ar="📝 تسليم وتصحيح الامتحان" data-en="📝 Submit & Grade Exam">📝 تسليم وتصحيح الامتحان</button>
+    </div>
 
-        <!-- Section 2: Ampere's Law -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الثاني: قانون أمبير وتطبيقاته</h2>
-            <ol id="section2-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-6">
-                    <strong>6.</strong> قانون أمبير (Ampere's Law) ينص على أن:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="a" class="ml-2"> أ) ∮B·dl = μ₀I_enclosed</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="b" class="ml-2"> ب) ∮E·dl = -dΦ/dt</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="c" class="ml-2"> ج) F = qvB</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q6" value="d" class="ml-2"> د) Φ = BA</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-7">
-                    <strong>7.</strong> قانون أمبير يكون مفيداً بشكل خاص عندما يكون التوزيع:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="a" class="ml-2"> أ) عشوائياً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="b" class="ml-2"> ب) متماثلاً (تناظرياً) بشكل عالٍ</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="c" class="ml-2"> ج) متغيراً مع الزمن</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q7" value="d" class="ml-2"> د) صفراً</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-8">
-                    <strong>8.</strong> المجال المغناطيسي داخل سلك أسطواني طويل نصف قطره R يحمل تياراً موزعاً بانتظام، على بعد r من المركز (حيث r < R):<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="a" class="ml-2"> أ) B = μ₀I/(2πr)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="b" class="ml-2"> ب) B = μ₀Ir/(2πR²)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="c" class="ml-2"> ج) B = μ₀I/(2πR)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q8" value="d" class="ml-2"> د) B = 0</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) يتناسب طردياً مع r</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-9">
-                    <strong>9.</strong> المجال المغناطيسي خارج سلك أسطواني طويل (r > R):<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="a" class="ml-2"> أ) يتناسب طردياً مع r</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="b" class="ml-2"> ب) يتناسب عكسياً مع r (كأن كل التيار في المركز)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="c" class="ml-2"> ج) يساوي صفراً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q9" value="d" class="ml-2"> د) ثابت لا يعتمد على r</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-10">
-                    <strong>10.</strong> عند سطح السلك (r = R)، المجال المغناطيسي يكون:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="a" class="ml-2"> أ) صفراً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="b" class="ml-2"> ب) في قيمته القصوى</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="c" class="ml-2"> ج) لا نهائياً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q10" value="d" class="ml-2"> د) سالباً</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) B = μ₀I/(2πR)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Section 3: Loop & Solenoid -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الثالث: الحلقة الدائرية والملف اللولبي (Solenoid)</h2>
-            <ol id="section3-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-11">
-                    <strong>11.</strong> المجال المغناطيسي في مركز حلقة دائرية نصف قطرها R تحمل تياراً I:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="a" class="ml-2"> أ) B = μ₀I/(2πR)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="b" class="ml-2"> ب) B = μ₀I/(2R)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="c" class="ml-2"> ج) B = μ₀nI</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q11" value="d" class="ml-2"> د) B = μ₀I/(4R)</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-12">
-                    <strong>12.</strong> المجال المغناطيسي على محور حلقة دائرية على بعد x من مركزها:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="a" class="ml-2"> أ) B = μ₀IR²/[2(R²+x²)^(3/2)]</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="b" class="ml-2"> ب) B = μ₀I/(2πx)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="c" class="ml-2"> ج) B = μ₀nI</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q12" value="d" class="ml-2"> د) B = μ₀I/(2R)</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-13">
-                    <strong>13.</strong> الملف اللولبي (Solenoid) المثالي يُنتج مجالاً مغناطيسياً:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="a" class="ml-2"> أ) متغيراً داخل الملف</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="b" class="ml-2"> ب) منتظماً وثابتاً داخل الملف، وصفراً خارجه</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="c" class="ml-2"> ج) صفراً في كل مكان</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q13" value="d" class="ml-2"> د) قوياً خارج الملف فقط</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-14">
-                    <strong>14.</strong> المجال المغناطيسي داخل ملف لولبي مثالي يُحسب من:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="a" class="ml-2"> أ) B = μ₀I/(2πr)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="b" class="ml-2"> ب) B = μ₀nI (حيث n عدد اللفات لكل وحدة طول)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="c" class="ml-2"> ج) B = μ₀I/(2R)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q14" value="d" class="ml-2"> د) B = μ₀NI</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-15">
-                    <strong>15.</strong> لزيادة المجال المغناطيسي داخل ملف لولبي، يمكننا:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="a" class="ml-2"> أ) تقليل عدد اللفات</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="b" class="ml-2"> ب) زيادة التيار أو زيادة كثافة اللفات (n)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="c" class="ml-2"> ج) تقليل التيار</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q15" value="d" class="ml-2"> د) زيادة قطر الملف فقط</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Section 4: Applications -->
-        <section class="bg-white p-6 rounded-xl shadow-lg">
-            <h2 class="text-xl font-bold mb-4 text-indigo-700">🔹 الجزء الرابع: التطبيقات (Railgun, Superposition)</h2>
-            <ol id="section4-list" class="space-y-4 text-sm">
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-16">
-                    <strong>16.</strong> مسدس السكك الحديدية (Railgun) يعمل بناءً على:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="a" class="ml-2"> أ) الحث الكهرومغناطيسي فقط</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="b" class="ml-2"> ب) القوة المغناطيسية على سلك يحمل تياراً في مجال مغناطيسي</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="c" class="ml-2"> ج) قانون كولوم</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q16" value="d" class="ml-2"> د) قانون أوم</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) F = ILB</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-17">
-                    <strong>17.</strong> في Railgun، إذا كان التيار 100A والمجال المغناطيسي 0.5T وطول القضيب 0.2m، فإن القوة =<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="a" class="ml-2"> أ) 10 N</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="b" class="ml-2"> ب) 100 N</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="c" class="ml-2"> ج) 1000 N</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q17" value="d" class="ml-2"> د) 5 N</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ) F = ILB = 100 × 0.2 × 0.5 = 10N</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-18">
-                    <strong>18.</strong> مبدأ التراكب (Superposition) للمجالات المغناطيسية ينص على أن:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="a" class="ml-2"> أ) المجال الكلي هو حاصل ضرب المجالات</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="b" class="ml-2"> ب) المجال الكلي هو المجموع الاتجاهي (المتجهي) للمجالات الفردية</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="c" class="ml-2"> ج) المجالات تلغي بعضها دائماً</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q18" value="d" class="ml-2"> د) المجال الأقوى فقط هو المؤثر</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب)</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-19">
-                    <strong>19.</strong> سلكان متوازيان طويلان يحملان تيارين في نفس الاتجاه:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="a" class="ml-2"> أ) يتنافران</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="b" class="ml-2"> ب) يتجاذبان</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="c" class="ml-2"> ج) لا يؤثر أحدهما على الآخر</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q19" value="d" class="ml-2"> د) يدوران حول بعضهما</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: ب) التيارات المتوازية في نفس الاتجاه تتجاذب</div>
-                </li>
-                <li class="border-r-4 border-indigo-500 pr-4 py-2" id="q-20">
-                    <strong>20.</strong> سلكان متوازيان بينهما مسافة d، يحملان تيارين I₁ و I₂. القوة لكل وحدة طول بينهما:<br>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="a" class="ml-2"> أ) F/L = μ₀I₁I₂/(2πd)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="b" class="ml-2"> ب) F/L = μ₀I₁I₂/(2d)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="c" class="ml-2"> ج) F/L = μ₀I₁I₂/(4πd)</label>
-                    <label class="mr-4 cursor-pointer block mt-1"><input type="radio" name="q20" value="d" class="ml-2"> د) F/L = μ₀I₁I₂·d</label>
-                    <div class="answer-box text-green-700 mt-2 font-medium hidden">✅ الإجابة: أ)</div>
-                </li>
-            </ol>
-        </section>
-
-        <!-- Submit Button -->
-        <div class="text-center no-print pb-8">
-            <button onclick="gradeExam()" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-lg px-10 py-4 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer">
-                📝 تسليم وتصحيح الامتحان
-            </button>
-        </div>
-    </main>
-
-    <!-- Results Panel -->
     <div id="results-panel" class="max-w-4xl mx-auto mt-8 bg-white p-8 rounded-2xl shadow-2xl border-t-4 border-emerald-500 hidden no-print">
-        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center">📊 نتائج الامتحان</h2>
+        <h2 class="text-3xl font-bold text-gray-900 mb-6 text-center" data-ar="📊 نتائج الامتحان" data-en="📊 Exam Results">📊 نتائج الامتحان</h2>
         <div class="grid md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-blue-50 p-4 rounded-xl text-center"><p>اسم الطالب</p><p id="res-name" class="font-bold text-xl text-indigo-700">-</p></div>
-            <div class="bg-purple-50 p-4 rounded-xl text-center"><p>التاريخ</p><p id="res-date" class="font-bold text-xl text-purple-700">-</p></div>
-            <div class="bg-emerald-50 p-4 rounded-xl text-center"><p>المجموع</p><p id="res-total" class="font-bold text-3xl text-emerald-600">0 / 100</p></div>
+            <div class="bg-blue-50 p-4 rounded-xl text-center"><p data-ar="اسم الطالب" data-en="Student Name">اسم الطالب</p><p id="res-name" class="font-bold text-xl text-indigo-700">-</p></div>
+            <div class="bg-purple-50 p-4 rounded-xl text-center"><p data-ar="التاريخ" data-en="Date">التاريخ</p><p id="res-date" class="font-bold text-xl text-purple-700">-</p></div>
+            <div class="bg-emerald-50 p-4 rounded-xl text-center"><p data-ar="المجموع" data-en="Score">المجموع</p><p id="res-total" class="font-bold text-3xl text-emerald-600">0 / 100</p></div>
         </div>
-
-        <!-- Success Rate Badge -->
         <div class="text-center mb-6">
-            <span id="success-badge" class="success-badge grade-excellent">ممتاز - 100%</span>
+            <span id="success-badge" class="success-badge grade-excellent">-</span>
             <p id="success-percent" class="text-4xl font-bold text-emerald-600 mt-2">100%</p>
-            <p class="text-sm text-gray-500">نسبة النجاح</p>
+            <p class="text-sm text-gray-500" data-ar="نسبة النجاح" data-en="Success Rate">نسبة النجاح</p>
         </div>
-
-        <!-- Performance Breakdown -->
         <div class="bg-gray-50 p-6 rounded-xl mb-6">
-            <h3 class="font-bold text-lg mb-4 text-gray-800">📈 تفصيل الأداء حسب القسم:</h3>
+            <h3 class="font-bold text-lg mb-4 text-gray-800" data-ar="📈 تفصيل الأداء حسب القسم:" data-en="📈 Performance Breakdown:">📈 تفصيل الأداء حسب القسم:</h3>
             <div class="space-y-3">
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">قانون بيوت-سافارت والسلك المستقيم</span>
-                    <span id="sec1-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">قانون أمبير وتطبيقاته</span>
-                    <span id="sec2-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">الحلقة الدائرية والملف اللولبي</span>
-                    <span id="sec3-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-700">التطبيقات (Railgun, Superposition)</span>
-                    <span id="sec4-score" class="font-bold text-indigo-600">0/5</span>
-                </div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="قانون بيوت-سافارت" data-en="Biot-Savart Law">قانون بيوت-سافارت</span><span id="sec1-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="قانون أمبير" data-en="Ampere's Law">قانون أمبير</span><span id="sec2-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="الحلقة والملف اللولبي" data-en="Loop & Solenoid">الحلقة والملف اللولبي</span><span id="sec3-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="التطبيقات (Railgun والتراكب)" data-en="Applications (Railgun & Superposition)">التطبيقات (Railgun والتراكب)</span><span id="sec4-score" class="font-bold text-indigo-600">0/4</span></div>
+                <div class="flex justify-between items-center"><span class="text-gray-700" data-ar="حسابات المسائل التطبيقية" data-en="Applied Calculations">حسابات المسائل التطبيقية</span><span id="sec5-score" class="font-bold text-indigo-600">0/4</span></div>
             </div>
         </div>
-
-        <!-- Email Send Button -->
         <div class="text-center mb-6">
-            <button id="sendEmailBtn" onclick="sendResultsToEmail()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer">
-                📧 إرسال النتائج للمعلم
-            </button>
+            <button id="sendEmailBtn" onclick="sendResultsToEmail()" class="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white text-lg px-8 py-3 rounded-xl font-bold shadow-xl transition transform hover:scale-105 cursor-pointer" data-ar="📧 إرسال النتائج للمعلم" data-en="📧 Send Results to Teacher">📧 إرسال النتائج للمعلم</button>
             <p id="emailStatus" class="text-sm mt-2 text-center font-medium"></p>
         </div>
-
         <div class="flex gap-3 justify-center">
-            <button onclick="window.print()" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold">🖨️ طباعة النتائج</button>
+            <button onclick="window.print()" class="bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold" data-ar="🖨️ طباعة النتائج" data-en="🖨️ Print Results">🖨️ طباعة النتائج</button>
         </div>
     </div>
 
     <footer class="max-w-4xl mx-auto mt-10 mb-8 text-center text-gray-500 text-sm no-print">
-        © الفيزياء للصف الثاني عشر المتقدم | الوحدة 8: بيوت-سافارت وأمبير | Mr. Mohammed Hesham
+        © <span data-ar="الفيزياء للصف 12 متقدم | بيوت-سافارت وأمبير" data-en="Grade 12 Advanced Physics | Biot-Savart & Ampere">الفيزياء للصف 12 متقدم | بيوت-سافارت وأمبير</span> | Mr. Mohammed Hesham
     </footer>
 
-    <script>
-        // EmailJS Configuration
-        const PUBLIC_KEY = "Rb3Lq8tXaFmc5YHUH";
-        const SERVICE_ID = "service_w15m64i";
-        const TEMPLATE_ID = "template_5b0u2tq";
-        const TARGET_EMAIL = "mohammedhesham872@gmail.com";
-
-        (function(){ emailjs.init(PUBLIC_KEY); })();
-
-        // Timer
-        let timeRemaining = 3600;
-        let timerInterval;
-
-        function startTimer() {
-            document.getElementById('timer-container').style.display = 'block';
-            timerInterval = setInterval(() => {
-                timeRemaining--;
-                const minutes = Math.floor(timeRemaining / 60);
-                const seconds = timeRemaining % 60;
-                const timerEl = document.getElementById('timer');
-                timerEl.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
-                
-                if (timeRemaining <= 300) timerEl.classList.add('timer-warning');
-                if (timeRemaining <= 0) {
-                    clearInterval(timerInterval);
-                    alert("انتهى الوقت! سيتم تسليم الامتحان تلقائياً.");
-                    gradeExam();
-                }
-            }, 1000);
+<script>
+const originalExamData = {
+    sections: [
+        {
+            id: 'sec1',
+            title: { ar: '🔹 الجزء الأول: قانون بيوت-سافارت', en: '🔹 Part 1: Biot-Savart Law' },
+            questions: [
+                { q: { ar: 'قانون بيوت-سافارت يُستخدم لحساب:', en: 'Biot-Savart Law is used to calculate:' }, options: [{ ar: 'المجال الكهربائي الناتج عن شحنة نقطية', en: 'Electric field due to a point charge' }, { ar: 'المجال المغناطيسي الناتج عن عنصر تيار صغير', en: 'Magnetic field due to a small current element' }, { ar: 'القوة بين شحنتين', en: 'Force between two charges' }, { ar: 'الطاقة المخزنة في ملف', en: 'Energy stored in a coil' }], correct: 1, answer: { ar: 'بيوت-سافارت: حساب المجال المغناطيسي من عنصر تيار <span class="formula">Idl</span>', en: 'Biot-Savart: calculate magnetic field from current element <span class="formula">Idl</span>' } },
+                { q: { ar: 'الصيغة الرياضية لقانون بيوت-سافارت هي:', en: 'The mathematical formula of Biot-Savart Law is:' }, options: [{ ar: '<span class="formula">dB = (μ₀/4π) × (I·dl × r̂)/r²</span>', en: '<span class="formula">dB = (μ₀/4π) × (I·dl × r̂)/r²</span>' }, { ar: '<span class="formula">B = μ₀nI</span>', en: '<span class="formula">B = μ₀nI</span>' }, { ar: '<span class="formula">F = qvB</span>', en: '<span class="formula">F = qvB</span>' }, { ar: '<span class="formula">Φ = BA cos(θ)</span>', en: '<span class="formula">Φ = BA cos(θ)</span>' }], correct: 0, answer: { ar: 'الصيغة الأساسية: <span class="formula">dB = (μ₀/4π) × (I·dl × r̂)/r²</span>', en: 'Basic formula: <span class="formula">dB = (μ₀/4π) × (I·dl × r̂)/r²</span>' } },
+                { q: { ar: 'قيمة نفاذية الفراغ <span class="formula">(μ₀)</span> تساوي:', en: 'The value of permeability of free space <span class="formula">(μ₀)</span> is:' }, options: [{ ar: '<span class="formula">8.85 × 10⁻¹² T·m/A</span>', en: '<span class="formula">8.85 × 10⁻¹² T·m/A</span>' }, { ar: '<span class="formula">6.67 × 10⁻¹¹ T·m/A</span>', en: '<span class="formula">6.67 × 10⁻¹¹ T·m/A</span>' }, { ar: '<span class="formula">4π × 10⁻⁷ T·m/A</span>', en: '<span class="formula">4π × 10⁻⁷ T·m/A</span>' }, { ar: '<span class="formula">9 × 10⁹ T·m/A</span>', en: '<span class="formula">9 × 10⁹ T·m/A</span>' }], correct: 2, answer: { ar: '<span class="formula">μ₀ = 4π × 10⁻⁷ T·m/A</span>', en: '<span class="formula">μ₀ = 4π × 10⁻⁷ T·m/A</span>' } },
+                { q: { ar: 'المجال المغناطيسي الناتج عن سلك مستقيم طويل يحمل تياراً <span class="formula">I</span> على بعد <span class="formula">r</span> منه يُحسب من:', en: 'Magnetic field due to a long straight wire carrying current <span class="formula">I</span> at distance <span class="formula">r</span> is calculated from:' }, options: [{ ar: '<span class="formula">B = μ₀I/(2πr)</span>', en: '<span class="formula">B = μ₀I/(2πr)</span>' }, { ar: '<span class="formula">B = μ₀I/(2r)</span>', en: '<span class="formula">B = μ₀I/(2r)</span>' }, { ar: '<span class="formula">B = μ₀nI</span>', en: '<span class="formula">B = μ₀nI</span>' }, { ar: '<span class="formula">B = μ₀I/(4πr)</span>', en: '<span class="formula">B = μ₀I/(4πr)</span>' }], correct: 0, answer: { ar: 'لسلك طويل: <span class="formula">B = μ₀I/(2πr)</span>', en: 'For long wire: <span class="formula">B = μ₀I/(2πr)</span>' } }
+            ]
+        },
+        {
+            id: 'sec2',
+            title: { ar: '🔹 الجزء الثاني: قانون أمبير', en: '🔹 Part 2: Ampere\'s Law' },
+            questions: [
+                { q: { ar: 'لتحديد اتجاه المجال المغناطيسي حول سلك مستقيم، نستخدم:', en: 'To determine the direction of magnetic field around a straight wire, we use:' }, options: [{ ar: 'قاعدة اليد اليسرى', en: 'Left-hand rule' }, { ar: 'قاعدة اليد اليمنى (الإبهام في اتجاه التيار، والأصابع في اتجاه B)', en: 'Right-hand rule (thumb in direction of current, fingers in direction of B)' }, { ar: 'قانون لينز', en: 'Lenz\'s Law' }, { ar: 'قانون فاراداي', en: 'Faraday\'s Law' }], correct: 1, answer: { ar: 'قاعدة اليد اليمنى: الإبهام = التيار، الأصابع = خطوط المجال', en: 'Right-hand rule: thumb = current, fingers = field lines' } },
+                { q: { ar: 'قانون أمبير ينص على أن:', en: 'Ampere\'s Law states that:' }, options: [{ ar: '<span class="formula">∮B·dl = μ₀I_enclosed</span>', en: '<span class="formula">∮B·dl = μ₀I_enclosed</span>' }, { ar: '<span class="formula">∮E·dl = -dΦ/dt</span>', en: '<span class="formula">∮E·dl = -dΦ/dt</span>' }, { ar: '<span class="formula">F = qvB</span>', en: '<span class="formula">F = qvB</span>' }, { ar: '<span class="formula">Φ = BA</span>', en: '<span class="formula">Φ = BA</span>' }], correct: 0, answer: { ar: 'قانون أمبير: <span class="formula">∮B·dl = μ₀I_enclosed</span>', en: 'Ampere\'s Law: <span class="formula">∮B·dl = μ₀I_enclosed</span>' } },
+                { q: { ar: 'قانون أمبير يكون مفيداً بشكل خاص عندما يكون التوزيع:', en: 'Ampere\'s Law is particularly useful when the distribution is:' }, options: [{ ar: 'عشوائياً', en: 'Random' }, { ar: 'متماثلاً (تناظرياً) بشكل عالٍ', en: 'Highly symmetric' }, { ar: 'متغيراً مع الزمن', en: 'Time-varying' }, { ar: 'صفراً', en: 'Zero' }], correct: 1, answer: { ar: 'قانون أمبير فعال مع التناظر العالي (أسطواني، مستقيم)', en: 'Ampere\'s Law is effective with high symmetry (cylindrical, straight)' } },
+                { q: { ar: 'المجال المغناطيسي داخل سلك أسطواني طويل نصف قطره <span class="formula">R</span> يحمل تياراً موزعاً بانتظام، على بعد <span class="formula">r</span> من المركز (حيث <span class="formula">r < R</span>):', en: 'Magnetic field inside a long cylindrical wire of radius <span class="formula">R</span> carrying uniformly distributed current, at distance <span class="formula">r</span> from center (where <span class="formula">r < R</span>):' }, options: [{ ar: '<span class="formula">B = μ₀I/(2πr)</span>', en: '<span class="formula">B = μ₀I/(2πr)</span>' }, { ar: '<span class="formula">B = μ₀Ir/(2πR²)</span>', en: '<span class="formula">B = μ₀Ir/(2πR²)</span>' }, { ar: '<span class="formula">B = μ₀I/(2πR)</span>', en: '<span class="formula">B = μ₀I/(2πR)</span>' }, { ar: '<span class="formula">B = 0</span>', en: '<span class="formula">B = 0</span>' }], correct: 1, answer: { ar: 'داخل السلك: <span class="formula">B = μ₀Ir/(2πR²)</span> (يتناسب طردياً مع r)', en: 'Inside wire: <span class="formula">B = μ₀Ir/(2πR²)</span> (proportional to r)' } }
+            ]
+        },
+        {
+            id: 'sec3',
+            title: { ar: '🔹 الجزء الثالث: الحلقة والملف اللولبي', en: '🔹 Part 3: Loop & Solenoid' },
+            questions: [
+                { q: { ar: 'المجال المغناطيسي خارج سلك أسطواني طويل (<span class="formula">r > R</span>):', en: 'Magnetic field outside a long cylindrical wire (<span class="formula">r > R</span>):' }, options: [{ ar: 'يتناسب طردياً مع r', en: 'Proportional to r' }, { ar: 'يتناسب عكسياً مع r (كأن كل التيار في المركز)', en: 'Inversely proportional to r (as if all current at center)' }, { ar: 'يساوي صفراً', en: 'Equals zero' }, { ar: 'ثابت لا يعتمد على r', en: 'Constant, independent of r' }], correct: 1, answer: { ar: 'خارج السلك: <span class="formula">B = μ₀I/(2πr)</span> (كأن كل التيار في المركز)', en: 'Outside wire: <span class="formula">B = μ₀I/(2πr)</span> (as if all current at center)' } },
+                { q: { ar: 'عند سطح السلك (<span class="formula">r = R</span>)، المجال المغناطيسي يكون:', en: 'At the surface of the wire (<span class="formula">r = R</span>), the magnetic field is:' }, options: [{ ar: 'صفراً', en: 'Zero' }, { ar: 'في قيمته القصوى', en: 'At its maximum value' }, { ar: 'لا نهائياً', en: 'Infinite' }, { ar: 'سالباً', en: 'Negative' }], correct: 1, answer: { ar: '<span class="formula">B = μ₀I/(2πR)</span> (أقصى قيمة على السطح)', en: '<span class="formula">B = μ₀I/(2πR)</span> (maximum value at surface)' } },
+                { q: { ar: 'المجال المغناطيسي في مركز حلقة دائرية نصف قطرها <span class="formula">R</span> تحمل تياراً <span class="formula">I</span>:', en: 'Magnetic field at the center of a circular loop of radius <span class="formula">R</span> carrying current <span class="formula">I</span>:' }, options: [{ ar: '<span class="formula">B = μ₀I/(2πR)</span>', en: '<span class="formula">B = μ₀I/(2πR)</span>' }, { ar: '<span class="formula">B = μ₀I/(2R)</span>', en: '<span class="formula">B = μ₀I/(2R)</span>' }, { ar: '<span class="formula">B = μ₀nI</span>', en: '<span class="formula">B = μ₀nI</span>' }, { ar: '<span class="formula">B = μ₀I/(4R)</span>', en: '<span class="formula">B = μ₀I/(4R)</span>' }], correct: 1, answer: { ar: 'في مركز الحلقة: <span class="formula">B = μ₀I/(2R)</span>', en: 'At center of loop: <span class="formula">B = μ₀I/(2R)</span>' } },
+                { q: { ar: 'المجال المغناطيسي داخل ملف لولبي مثالي يُحسب من:', en: 'Magnetic field inside an ideal solenoid is calculated from:' }, options: [{ ar: '<span class="formula">B = μ₀I/(2πr)</span>', en: '<span class="formula">B = μ₀I/(2πr)</span>' }, { ar: '<span class="formula">B = μ₀nI</span> (حيث n عدد اللفات لكل وحدة طول)', en: '<span class="formula">B = μ₀nI</span> (where n is number of turns per unit length)' }, { ar: '<span class="formula">B = μ₀I/(2R)</span>', en: '<span class="formula">B = μ₀I/(2R)</span>' }, { ar: '<span class="formula">B = μ₀NI</span>', en: '<span class="formula">B = μ₀NI</span>' }], correct: 1, answer: { ar: 'داخل الملف اللولبي: <span class="formula">B = μ₀nI</span>', en: 'Inside solenoid: <span class="formula">B = μ₀nI</span>' } }
+            ]
+        },
+        {
+            id: 'sec4',
+            title: { ar: '🔹 الجزء الرابع: التطبيقات (Railgun والتراكب)', en: '🔹 Part 4: Applications (Railgun & Superposition)' },
+            questions: [
+                { q: { ar: 'المجال المغناطيسي على محور حلقة دائرية على بعد <span class="formula">x</span> من مركزها:', en: 'Magnetic field on the axis of a circular loop at distance <span class="formula">x</span> from its center:' }, options: [{ ar: '<span class="formula">B = μ₀IR²/[2(R²+x²)^(3/2)]</span>', en: '<span class="formula">B = μ₀IR²/[2(R²+x²)^(3/2)]</span>' }, { ar: '<span class="formula">B = μ₀I/(2πx)</span>', en: '<span class="formula">B = μ₀I/(2πx)</span>' }, { ar: '<span class="formula">B = μ₀nI</span>', en: '<span class="formula">B = μ₀nI</span>' }, { ar: '<span class="formula">B = μ₀I/(2R)</span>', en: '<span class="formula">B = μ₀I/(2R)</span>' }], correct: 0, answer: { ar: 'على المحور: <span class="formula">B = μ₀IR²/[2(R²+x²)^(3/2)]</span>', en: 'On axis: <span class="formula">B = μ₀IR²/[2(R²+x²)^(3/2)]</span>' } },
+                { q: { ar: 'الملف اللولبي المثالي يُنتج مجالاً مغناطيسياً:', en: 'An ideal solenoid produces a magnetic field:' }, options: [{ ar: 'متغيراً داخل الملف', en: 'Variable inside the coil' }, { ar: 'منتظماً وثابتاً داخل الملف، وصفراً خارجه', en: 'Uniform and constant inside the coil, zero outside' }, { ar: 'صفراً في كل مكان', en: 'Zero everywhere' }, { ar: 'قوياً خارج الملف فقط', en: 'Strong outside the coil only' }], correct: 1, answer: { ar: 'داخل الملف اللولبي: منتظم، خارجه: صفر', en: 'Inside solenoid: uniform, outside: zero' } },
+                { q: { ar: 'مسدس السكك الحديدية (Railgun) يعمل بناءً على:', en: 'A Railgun operates based on:' }, options: [{ ar: 'الحث الكهرومغناطيسي فقط', en: 'Electromagnetic induction only' }, { ar: 'القوة المغناطيسية على سلك يحمل تياراً في مجال مغناطيسي', en: 'Magnetic force on a current-carrying wire in a magnetic field' }, { ar: 'قانون كولوم', en: 'Coulomb\'s Law' }, { ar: 'قانون أوم', en: 'Ohm\'s Law' }], correct: 1, answer: { ar: '<span class="formula">F = ILB</span> (قوة لورنتز على قضيب)', en: '<span class="formula">F = ILB</span> (Lorentz force on rail)' } },
+                { q: { ar: 'مبدأ التراكب للمجالات المغناطيسية ينص على أن:', en: 'The superposition principle for magnetic fields states that:' }, options: [{ ar: 'المجال الكلي هو حاصل ضرب المجالات', en: 'Total field is the product of fields' }, { ar: 'المجال الكلي هو المجموع الاتجاهي (المتجهي) للمجالات الفردية', en: 'Total field is the vector sum of individual fields' }, { ar: 'المجالات تلغي بعضها دائماً', en: 'Fields always cancel each other' }, { ar: 'المجال الأقوى فقط هو المؤثر', en: 'Only the strongest field matters' }], correct: 1, answer: { ar: 'التراكب: <span class="formula">B_total = B₁ + B₂ + ...</span> (جمع متجهي)', en: 'Superposition: <span class="formula">B_total = B₁ + B₂ + ...</span> (vector sum)' } }
+            ]
+        },
+        {
+            id: 'sec5',
+            title: { ar: '🔹 الجزء الخامس: حسابات المسائل التطبيقية', en: '🔹 Part 5: Applied Calculations' },
+            questions: [
+                { q: { ar: 'لزيادة المجال المغناطيسي داخل ملف لولبي، يمكننا:', en: 'To increase the magnetic field inside a solenoid, we can:' }, options: [{ ar: 'تقليل عدد اللفات', en: 'Decrease number of turns' }, { ar: 'زيادة التيار أو زيادة كثافة اللفات (n)', en: 'Increase current or increase turn density (n)' }, { ar: 'تقليل التيار', en: 'Decrease current' }, { ar: 'زيادة قطر الملف فقط', en: 'Increase coil diameter only' }], correct: 1, answer: { ar: '<span class="formula">B = μ₀nI</span>، فزيادة I أو n تزيد B', en: '<span class="formula">B = μ₀nI</span>, so increasing I or n increases B' } },
+                { q: { ar: 'سلكان متوازيان طويلان يحملان تيارين في نفس الاتجاه:', en: 'Two long parallel wires carrying currents in the same direction:' }, options: [{ ar: 'يتنافران', en: 'Repel each other' }, { ar: 'يتجاذبان', en: 'Attract each other' }, { ar: 'لا يؤثر أحدهما على الآخر', en: 'Do not affect each other' }, { ar: 'يدوران حول بعضهما', en: 'Rotate around each other' }], correct: 1, answer: { ar: 'التيارات المتوازية في نفس الاتجاه تتجاذب', en: 'Parallel currents in same direction attract' } },
+                { q: { ar: 'في Railgun، إذا كان التيار <span class="formula">100 A</span> والمجال المغناطيسي <span class="formula">0.5 T</span> وطول القضيب <span class="formula">0.2 m</span>، فإن القوة =', en: 'In a Railgun, if current is <span class="formula">100 A</span>, magnetic field <span class="formula">0.5 T</span>, and rail length <span class="formula">0.2 m</span>, then force =' }, options: [{ ar: '<span class="formula">10 N</span>', en: '<span class="formula">10 N</span>' }, { ar: '<span class="formula">100 N</span>', en: '<span class="formula">100 N</span>' }, { ar: '<span class="formula">1000 N</span>', en: '<span class="formula">1000 N</span>' }, { ar: '<span class="formula">5 N</span>', en: '<span class="formula">5 N</span>' }], correct: 0, answer: { ar: '<span class="formula">F = ILB = 0.2 × 100 × 0.5 = 10 N</span>', en: '<span class="formula">F = ILB = 0.2 × 100 × 0.5 = 10 N</span>' } },
+                { q: { ar: 'سلكان متوازيان بينهما مسافة <span class="formula">d</span>، يحملان تيارين <span class="formula">I₁</span> و <span class="formula">I₂</span>. القوة لكل وحدة طول بينهما:', en: 'Two parallel wires at distance <span class="formula">d</span>, carrying currents <span class="formula">I₁</span> and <span class="formula">I₂</span>. Force per unit length between them:' }, options: [{ ar: '<span class="formula">F/L = μ₀I₁I₂/(2πd)</span>', en: '<span class="formula">F/L = μ₀I₁I₂/(2πd)</span>' }, { ar: '<span class="formula">F/L = μ₀I₁I₂/(2d)</span>', en: '<span class="formula">F/L = μ₀I₁I₂/(2d)</span>' }, { ar: '<span class="formula">F/L = μ₀I₁I₂/(4πd)</span>', en: '<span class="formula">F/L = μ₀I₁I₂/(4πd)</span>' }, { ar: '<span class="formula">F/L = μ₀I₁I₂·d</span>', en: '<span class="formula">F/L = μ₀I₁I₂·d</span>' }], correct: 0, answer: { ar: '<span class="formula">F/L = μ₀I₁I₂/(2πd)</span>', en: '<span class="formula">F/L = μ₀I₁I₂/(2πd)</span>' } }
+            ]
         }
+    ]
+};
 
-        function toggleAnswers() {
-            document.querySelectorAll('.answer-box').forEach(el => el.classList.toggle('hidden'));
+function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+let examData;
+let correctAnswersMap = {};
+
+function prepareShuffledExam() {
+    examData = JSON.parse(JSON.stringify(originalExamData));
+    correctAnswersMap = {};
+    let globalIdx = 1;
+    examData.sections.forEach((section) => {
+        section.questions = shuffleArray(section.questions);
+        section.questions.forEach((q) => {
+            const optionsWithCorrect = q.options.map((opt, idx) => ({
+                option: opt,
+                isCorrect: idx === q.correct
+            }));
+            const shuffledOptions = shuffleArray(optionsWithCorrect);
+            q.options = shuffledOptions.map(o => o.option);
+            const newCorrectIndex = shuffledOptions.findIndex(o => o.isCorrect);
+            q.correct = newCorrectIndex;
+            correctAnswersMap[globalIdx] = String.fromCharCode(97 + newCorrectIndex);
+            globalIdx++;
+        });
+    });
+    console.log('✅ تم خلط الأسئلة والخيارات بنجاح');
+}
+
+function reshuffleExam() {
+    prepareShuffledExam();
+    renderExam();
+    document.querySelectorAll('input[type="radio"]:checked').forEach(r => r.checked = false);
+    document.getElementById('results-panel').classList.add('hidden');
+    document.querySelectorAll('.correct, .incorrect').forEach(el => {
+        el.classList.remove('correct', 'incorrect');
+    });
+    alert(currentLang === 'ar' ? '🔀 تم إعادة خلط الأسئلة والخيارات بنجاح!' : '🔀 Questions and options have been reshuffled successfully!');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+let currentLang = 'ar';
+let timeRemaining = 3600;
+let timerInterval;
+
+function setLanguage(lang) {
+    currentLang = lang;
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+    document.body.classList.toggle('en-mode', lang === 'en');
+    document.querySelectorAll('[data-ar][data-en]').forEach(el => {
+        el.textContent = el.getAttribute(`data-${lang}`);
+    });
+    renderExam();
+}
+
+function renderExam() {
+    const container = document.getElementById('exam-content');
+    const labels = {
+        ar: { option: ['أ', 'ب', 'ج', 'د'], answer: '✅ الإجابة:' },
+        en: { option: ['A', 'B', 'C', 'D'], answer: '✅ Answer:' }
+    };
+    const lbl = labels[currentLang];
+    const isRTL = currentLang === 'ar';
+    let html = '';
+    let globalIdx = 1;
+    examData.sections.forEach((section) => {
+        html += `<section class="bg-white p-6 rounded-xl shadow-lg">
+            <h2 class="text-xl font-bold mb-4 text-indigo-700">${section.title[currentLang]}</h2>
+            <ol class="space-y-4 text-sm">`;
+        section.questions.forEach((q) => {
+            const borderSide = isRTL ? 'border-r-4 pr-4' : 'border-l-4 pl-4';
+            html += `<li class="${borderSide} border-indigo-500 py-2" id="q-${globalIdx}">
+                <strong>${globalIdx}.</strong> ${q.q[currentLang]}<br>`;
+            q.options.forEach((opt, oIdx) => {
+                const radioSide = isRTL ? 'mr-4 ml-2' : 'ml-4 mr-2';
+                html += `<label class="cursor-pointer block mt-1 ${isRTL ? 'mr-4' : 'ml-4'}">
+                    <input type="radio" name="q${globalIdx}" value="${String.fromCharCode(97 + oIdx)}" class="${radioSide}">
+                    ${lbl.option[oIdx]}) ${opt[currentLang]}
+                </label>`;
+            });
+            html += `<div class="answer-box text-green-700 mt-2 font-medium hidden">
+                ${lbl.answer} ${lbl.option[q.correct]}) ${q.options[q.correct][currentLang]} — ${q.answer[currentLang]}
+            </div></li>`;
+            globalIdx++;
+        });
+        html += `</ol></section>`;
+    });
+    container.innerHTML = html;
+}
+
+function startTimer() {
+    document.getElementById('timer-container').style.display = 'block';
+    timerInterval = setInterval(() => {
+        timeRemaining--;
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        const timerEl = document.getElementById('timer');
+        timerEl.textContent = `${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+        if (timeRemaining <= 300) timerEl.classList.add('timer-warning');
+        if (timeRemaining <= 0) {
+            clearInterval(timerInterval);
+            alert(currentLang === 'ar' ? "انتهى الوقت! سيتم تسليم الامتحان تلقائياً." : "Time's up!");
+            gradeExam();
         }
+    }, 1000);
+}
 
-        function gradeExam() {
-            let correctCount = 0;
-            const correctAnswers = [
-                'b','a','c','a','b',  // Q1-5: Biot-Savart
-                'a','b','b','b','b',  // Q6-10: Ampere's Law
-                'b','a','b','b','b',  // Q11-15: Loop & Solenoid
-                'b','a','b','b','a'   // Q16-20: Applications
-            ];
+function toggleAnswers() {
+    document.querySelectorAll('.answer-box').forEach(el => el.classList.toggle('hidden'));
+}
 
-            let sec1 = 0, sec2 = 0, sec3 = 0, sec4 = 0;
-
-            for(let i=1; i<=20; i++){
-                const selected = document.querySelector(`input[name="q${i}"]:checked`);
-                const li = document.getElementById(`q-${i}`);
-                const isCorrect = selected && selected.value === correctAnswers[i-1];
-                
-                if (isCorrect) {
-                    correctCount++;
-                    li.classList.add('correct');
-                    li.classList.remove('incorrect');
-                    
-                    if (i <= 5) sec1++;
-                    else if (i <= 10) sec2++;
-                    else if (i <= 15) sec3++;
-                    else sec4++;
-                } else {
-                    li.classList.add('incorrect');
-                    li.classList.remove('correct');
-                }
-            }
-
-            const score = (correctCount / 20) * 100;
-            const successRate = Math.round(score);
-            
-            document.getElementById('res-total').textContent = `${Math.round(score)} / 100`;
-            document.getElementById('res-name').textContent = document.getElementById('studentName').value || 'طالب';
-            document.getElementById('res-date').textContent = new Date().toLocaleDateString('ar-AE');
-            
-            document.getElementById('sec1-score').textContent = `${sec1}/5`;
-            document.getElementById('sec2-score').textContent = `${sec2}/5`;
-            document.getElementById('sec3-score').textContent = `${sec3}/5`;
-            document.getElementById('sec4-score').textContent = `${sec4}/5`;
-            
-            const badge = document.getElementById('success-badge');
-            const percent = document.getElementById('success-percent');
-            percent.textContent = `${successRate}%`;
-            
-            if(successRate >= 90) {
-                badge.textContent = 'ممتاز';
-                badge.className = 'success-badge grade-excellent';
-            } else if(successRate >= 75) {
-                badge.textContent = 'جيد جداً';
-                badge.className = 'success-badge grade-good';
-            } else if(successRate >= 50) {
-                badge.textContent = 'جيد';
-                badge.className = 'success-badge grade-pass';
-            } else {
-                badge.textContent = 'يحتاج تحسين';
-                badge.className = 'success-badge grade-fail';
-            }
-            
-            document.getElementById('results-panel').classList.remove('hidden');
-            document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
-            document.getElementById('sendEmailBtn').classList.remove('hidden');
+function gradeExam() {
+    let correctCount = 0;
+    let sec1=0, sec2=0, sec3=0, sec4=0, sec5=0;
+    for (let i = 1; i <= 20; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const li = document.getElementById(`q-${i}`);
+        const correctAnswer = correctAnswersMap[i];
+        const isCorrect = selected && selected.value === correctAnswer;
+        if (isCorrect) {
+            correctCount++;
+            li.classList.add('correct');
+            li.classList.remove('incorrect');
+            if (i <= 4) sec1++;
+            else if (i <= 8) sec2++;
+            else if (i <= 12) sec3++;
+            else if (i <= 16) sec4++;
+            else sec5++;
+        } else {
+            li.classList.add('incorrect');
+            li.classList.remove('correct');
         }
+    }
+    const score = (correctCount / 20) * 100;
+    const successRate = Math.round(score);
+    document.getElementById('res-total').textContent = `${Math.round(score)} / 100`;
+    document.getElementById('res-name').textContent = document.getElementById('studentName').value || (currentLang === 'ar' ? 'طالب' : 'Student');
+    document.getElementById('res-date').textContent = new Date().toLocaleDateString(currentLang === 'ar' ? 'ar-AE' : 'en-US');
+    document.getElementById('sec1-score').textContent = `${sec1}/4`;
+    document.getElementById('sec2-score').textContent = `${sec2}/4`;
+    document.getElementById('sec3-score').textContent = `${sec3}/4`;
+    document.getElementById('sec4-score').textContent = `${sec4}/4`;
+    document.getElementById('sec5-score').textContent = `${sec5}/4`;
+    const badge = document.getElementById('success-badge');
+    document.getElementById('success-percent').textContent = `${successRate}%`;
+    if (currentLang === 'ar') {
+        if (successRate >= 90) { badge.textContent = 'ممتاز'; badge.className = 'success-badge grade-excellent'; }
+        else if (successRate >= 75) { badge.textContent = 'جيد جداً'; badge.className = 'success-badge grade-good'; }
+        else if (successRate >= 50) { badge.textContent = 'جيد'; badge.className = 'success-badge grade-pass'; }
+        else { badge.textContent = 'يحتاج تحسين'; badge.className = 'success-badge grade-fail'; }
+    } else {
+        if (successRate >= 90) { badge.textContent = 'Excellent'; badge.className = 'success-badge grade-excellent'; }
+        else if (successRate >= 75) { badge.textContent = 'Very Good'; badge.className = 'success-badge grade-good'; }
+        else if (successRate >= 50) { badge.textContent = 'Good'; badge.className = 'success-badge grade-pass'; }
+        else { badge.textContent = 'Needs Improvement'; badge.className = 'success-badge grade-fail'; }
+    }
+    document.getElementById('results-panel').classList.remove('hidden');
+    document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth' });
+    document.getElementById('sendEmailBtn').classList.remove('hidden');
+}
 
-        function sendResultsToEmail() {
-            const btn = document.getElementById('sendEmailBtn');
-            const status = document.getElementById('emailStatus');
-            btn.disabled = true;
-            btn.textContent = '⏳ جاري الإرسال...';
+function sendResultsToEmail() {
+    const btn = document.getElementById('sendEmailBtn');
+    const status = document.getElementById('emailStatus');
+    btn.disabled = true;
+    btn.textContent = currentLang === 'ar' ? '⏳ جاري الإرسال...' : '⏳ Sending...';
+    const name = document.getElementById('studentName').value || 'N/A';
+    const studentClass = document.getElementById('studentClass').value || 'N/A';
+    const date = document.querySelector('input[type="text"]').value || new Date().toLocaleDateString();
+    const score = document.getElementById('res-total').textContent;
+    const successRate = document.getElementById('success-percent').textContent;
+    const badge = document.getElementById('success-badge').textContent;
+    const sectionNames = {
+        ar: ['قانون بيوت-سافارت', 'قانون أمبير', 'الحلقة والملف اللولبي', 'التطبيقات (Railgun)', 'حسابات المسائل'],
+        en: ['Biot-Savart Law', 'Ampere\'s Law', 'Loop & Solenoid', 'Applications (Railgun)', 'Applied Calculations']
+    };
+    const currentSectionNames = sectionNames[currentLang];
+    let answersHTML = `<div style="font-family: 'Segoe UI', Tahoma, Arial, sans-serif; direction: ${currentLang === 'ar' ? 'rtl' : 'ltr'};">
+        <div style="background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center;">
+            <h2 style="margin: 0; font-size: 22px;">🧲 ${currentLang === 'ar' ? 'نتيجة امتحان بيوت-سافارت وأمبير' : 'Biot-Savart & Ampere Exam Result'}</h2>
+            <p style="margin: 5px 0 0 0; opacity: 0.9;">${currentLang === 'ar' ? 'الصف الثاني عشر المتقدم' : 'Grade 12 Advanced'}</p>
+            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">🔀 ${currentLang === 'ar' ? 'تم خلط الأسئلة تلقائياً' : 'Questions were randomly shuffled'}</p>
+        </div>
+        <div style="background: #eef2ff; padding: 15px; border: 1px solid #c7d2fe;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr><td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '👤 الاسم:' : '👤 Name:'}</td><td style="padding: 8px;">${name}</td>
+                <td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '🏫 الشعبة:' : '🏫 Class:'}</td><td style="padding: 8px;">${studentClass}</td></tr>
+                <tr><td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '📅 التاريخ:' : '📅 Date:'}</td><td style="padding: 8px;">${date}</td>
+                <td style="padding: 8px; font-weight: bold; color: #4338ca;">${currentLang === 'ar' ? '🏆 التقدير:' : '🏆 Grade:'}</td><td style="padding: 8px;">${badge}</td></tr>
+            </table>
+        </div>
+        <div style="background: white; padding: 20px; text-align: center; border-bottom: 2px solid #e5e7eb;">
+            <div style="display: inline-block; margin: 0 15px;"><div style="font-size: 32px; font-weight: bold; color: #4f46e5;">${score}</div><div style="color: #6b7280; font-size: 13px;">${currentLang === 'ar' ? 'الدرجة الكلية' : 'Total Score'}</div></div>
+            <div style="display: inline-block; margin: 0 15px;"><div style="font-size: 32px; font-weight: bold; color: #059669;">${successRate}%</div><div style="color: #6b7280; font-size: 13px;">${currentLang === 'ar' ? 'نسبة النجاح' : 'Success Rate'}</div></div>
+        </div>
+        <h3 style="background: #f3f4f6; padding: 12px; margin: 0; color: #1f2937; border-bottom: 2px solid #d1d5db;">📝 ${currentLang === 'ar' ? 'تفاصيل الإجابات' : 'Answer Details'}</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: #4f46e5; color: white;">
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 8%;">#</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 32%;">${currentLang === 'ar' ? 'القسم' : 'Section'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'الإجابة' : 'Answer'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'الصحيحة' : 'Correct'}</th>
+                <th style="padding: 10px; border: 1px solid #4338ca; width: 15%;">${currentLang === 'ar' ? 'النتيجة' : 'Status'}</th>
+            </tr></thead><tbody>`;
+    let sectionScores = [0, 0, 0, 0, 0];
+    let sectionTotals = [4, 4, 4, 4, 4];
+    for (let i = 1; i <= 20; i++) {
+        const selected = document.querySelector(`input[name="q${i}"]:checked`);
+        const selectedValue = selected ? selected.value : '-';
+        const correctValue = correctAnswersMap[i];
+        const isCorrect = selectedValue === correctValue;
+        const sectionIndex = Math.floor((i - 1) / 4);
+        if (isCorrect) sectionScores[sectionIndex]++;
+        const rowBg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
+        const statusBg = isCorrect ? '#dcfce7' : '#fee2e2';
+        const statusColor = isCorrect ? '#166534' : '#991b1b';
+        const statusIcon = isCorrect ? '✅' : '❌';
+        const statusText = isCorrect ? (currentLang === 'ar' ? 'صحيح' : 'Correct') : (currentLang === 'ar' ? 'خطأ' : 'Wrong');
+        answersHTML += `<tr style="background: ${rowBg};">
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${i}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb;">${currentSectionNames[sectionIndex]}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold;">${selectedValue.toUpperCase()}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #059669;">${correctValue.toUpperCase()}</td>
+            <td style="padding: 8px; border: 1px solid #e5e7eb; text-align: center; background: ${statusBg}; color: ${statusColor}; font-weight: bold;">${statusIcon} ${statusText}</td>
+        </tr>`;
+    }
+    answersHTML += `</tbody></table>
+        <h3 style="background: #f3f4f6; padding: 12px; margin: 0; color: #1f2937; border-bottom: 2px solid #d1d5db; border-top: 3px solid #4f46e5;">📊 ${currentLang === 'ar' ? 'تفصيل الأداء' : 'Performance Breakdown'}</h3>
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead><tr style="background: #7c3aed; color: white;">
+                <th style="padding: 10px; border: 1px solid #6d28d9;">${currentLang === 'ar' ? 'القسم' : 'Section'}</th>
+                <th style="padding: 10px; border: 1px solid #6d28d9; width: 20%;">${currentLang === 'ar' ? 'النتيجة' : 'Score'}</th>
+                <th style="padding: 10px; border: 1px solid #6d28d9; width: 20%;">${currentLang === 'ar' ? 'النسبة' : 'Percentage'}</th>
+            </tr></thead><tbody>`;
+    for (let i = 0; i < 5; i++) {
+        const percentage = Math.round((sectionScores[i] / sectionTotals[i]) * 100);
+        const barColor = percentage >= 75 ? '#10b981' : percentage >= 50 ? '#f59e0b' : '#ef4444';
+        const rowBg = i % 2 === 0 ? '#f9fafb' : '#ffffff';
+        answersHTML += `<tr style="background: ${rowBg};">
+            <td style="padding: 10px; border: 1px solid #e5e7eb; font-weight: 600;">${currentSectionNames[i]}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb; text-align: center; font-weight: bold; color: #4f46e5;">${sectionScores[i]} / ${sectionTotals[i]}</td>
+            <td style="padding: 10px; border: 1px solid #e5e7eb;">
+                <div style="background: #e5e7eb; border-radius: 10px; overflow: hidden; height: 20px; position: relative;">
+                    <div style="background: ${barColor}; width: ${percentage}%; height: 100%;"></div>
+                    <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: bold; color: #1f2937;">${percentage}%</span>
+                </div>
+            </td>
+        </tr>`;
+    }
+    answersHTML += `</tbody></table>
+        <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); padding: 15px; border-radius: 0 0 10px 10px; border-top: 2px solid #f59e0b;">
+            <p style="margin: 0; color: #78350f; text-align: center; font-size: 13px;">🧲 <strong>${currentLang === 'ar' ? 'ملاحظة:' : 'Note:'}</strong> ${currentLang === 'ar' ? 'تم إرسال هذا التقرير تلقائياً من منصة 4U التعليمية | Mr. Mohammed Hesham' : 'This report was automatically sent from 4U Educational Platform | Mr. Mohammed Hesham'}</p>
+        </div></div>`;
+    const templateParams = {
+        to_email: "mohammedhesham872@gmail.com",
+        student_name: name,
+        student_class: studentClass,
+        exam_date: date,
+        total_score: score,
+        success_rate: successRate,
+        grade: badge,
+        answers_table: answersHTML
+    };
+    emailjs.send("service_w15m64i", "template_5b0u2tq", templateParams)
+        .then(() => {
+            status.textContent = currentLang === 'ar' ? '✅ تم إرسال النتائج بنجاح!' : '✅ Results sent successfully!';
+            status.style.color = '#059669';
+            btn.textContent = currentLang === 'ar' ? '✓ تم الإرسال' : '✓ Sent';
+        })
+        .catch(err => {
+            status.textContent = currentLang === 'ar' ? '❌ فشل الإرسال' : '❌ Failed to send';
+            status.style.color = '#dc2626';
+            btn.disabled = false;
+            btn.textContent = currentLang === 'ar' ? '📧 إعادة المحاولة' : '📧 Retry Send';
+            console.error('EmailJS Error:', err);
+        });
+}
 
-            const name = document.getElementById('studentName').value || 'N/A';
-            const date = document.querySelector('input[type="text"]').value || new Date().toLocaleDateString('ar-AE');
-            const score = document.getElementById('res-total').textContent;
-            const successRate = document.getElementById('success-percent').textContent;
-            const sec1 = document.getElementById('sec1-score').textContent;
-            const sec2 = document.getElementById('sec2-score').textContent;
-            const sec3 = document.getElementById('sec3-score').textContent;
-            const sec4 = document.getElementById('sec4-score').textContent;
-
-            let answersHTML = `<div dir="rtl" style="font-family: 'Cairo', sans-serif;">
-                <h3 style="color:#4F46E5;">📊 تفصيل الأداء:</h3>
-                <ul>
-                    <li>قانون بيوت-سافارت: ${sec1}</li>
-                    <li>قانون أمبير: ${sec2}</li>
-                    <li>الحلقة والملف اللولبي: ${sec3}</li>
-                    <li>التطبيقات: ${sec4}</li>
-                </ul>
-                <table style="border:1px solid #e5e7eb; border-collapse:collapse; width:100%; font-size:14px; direction: rtl;">
-                <tr style="background:#4F46E5; color:white;"><th style="border:1px solid #e5e7eb; padding:8px;">السؤال</th><th style="border:1px solid #e5e7eb; padding:8px;">الإجابة المختارة</th><th style="border:1px solid #e5e7eb; padding:8px;">الحالة</th></tr>`;
-            
-            const correctAnswers = ['b','a','c','a','b','a','b','b','b','b','b','a','b','b','b','b','a','b','b','a'];
-            
-            for(let i=1; i<=20; i++) {
-                const sel = document.querySelector(`input[name="q${i}"]:checked`);
-                const isCorrect = sel && sel.value === correctAnswers[i-1];
-                answersHTML += `<tr><td style="border:1px solid #e5e7eb; padding:6px;">${i}</td><td style="border:1px solid #e5e7eb; padding:6px;">${sel ? sel.value : '-'}</td><td style="border:1px solid #e5e7eb; padding:6px; color:${isCorrect ? 'green' : 'red'}">${isCorrect ? '✅ صحيح' : '❌ خطأ'}</td></tr>`;
-            }
-            answersHTML += '</table></div>';
-
-            const templateParams = {
-                to_email: TARGET_EMAIL,
-                student_name: name,
-                exam_date: date,
-                total_score: score,
-                success_rate: successRate,
-                answers_table: answersHTML
-            };
-
-            emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
-                .then(() => {
-                    status.textContent = '✅ تم الإرسال بنجاح! تحقق من Gmail.';
-                    status.style.color = '#059669';
-                    btn.textContent = '✓ تم الإرسال';
-                })
-                .catch(err => {
-                    status.textContent = '❌ فشل الإرسال. تحقق من الإعدادات.';
-                    status.style.color = '#dc2626';
-                    btn.disabled = false;
-                    btn.textContent = '📧 إعادة المحاولة';
-                    console.error('EmailJS Error:', err);
-                });
-        }
-
-        window.addEventListener('DOMContentLoaded', startTimer);
-    </script>
+window.addEventListener('DOMContentLoaded', () => {
+    prepareShuffledExam();
+    renderExam();
+    startTimer();
+    console.log('🔀 تم خلط الأسئلة والخيارات عشوائياً!');
+});
+</script>
 </body>
 </html>
